@@ -13,14 +13,15 @@ public class StateModifier {
     private static final int ARROW_LEFT = 68;
     private static final int ARROW_RIGHT = 67;
     private static final int BACKSPACE = 127;
-    private static final int UNDO = -1;
-    private static final int REDO = 21;
-    private static final int SELECTION_UP = 1065;
+    private static final int UNDO = -1; //ctrl+z
+    private static final int REDO = 21; //ctrl+u
+    private static final int SELECTION_UP = 1065; //shift+up
     private static final int SELECTION_DOWN = 1066;
     private static final int SELECTION_LEFT = 1068;
     private static final int SELECTION_RIGHT = 1067;
-    private static final int COPY = 3;    
-    private static final int PASTE = 22;
+    private static final int COPY = 3;    //ctrl+c
+    private static final int PASTE = 22; //ctrl+v
+    private static final int CUT = 24; //ctrl+x
 
 
     ComandManager commandManager = new ComandManager();
@@ -66,6 +67,10 @@ public class StateModifier {
             case SELECTION_DOWN -> selectDown();
             case COPY -> ClipboardManager.copyToClipboard(state.getSelectedText()); // already fine
             case PASTE -> pasteClipboard(); // NEW
+            case CUT -> {
+                ClipboardManager.copyToClipboard(state.getSelectedText());
+                deleteSelectionOrSymbol();
+            }
             default -> {
                 insertReplacingSelection((char) command); // NEW
                 clearSelection();
@@ -149,6 +154,8 @@ public class StateModifier {
     
         Comand delete = new DeleteComand(state, deletedContent, start, end);
         commandManager.execute(delete);
+        delete.setAfterCoordAndOffsetY(new  int[] {state.getCursorX(), state.getCursorY()}, 
+            state.getOffsetY());
     }
 
     private void clearSelection() {
@@ -231,6 +238,8 @@ public class StateModifier {
             state.setCursorX(start[1]);
             state.setCursorY(start[0]);
             clearSelection();
+            delete.setAfterCoordAndOffsetY(new  int[] {state.getCursorX(), state.getCursorY()}, 
+            state.getOffsetY());
         } else {
             deleteSymbol();
         }
@@ -248,6 +257,8 @@ public class StateModifier {
         } else {
             moveRight();
         }
+        insert.setAfterCoordAndOffsetY(new  int[] {state.getCursorX(), state.getCursorY()}, 
+        state.getOffsetY());
     }
     
     private void pasteClipboard() {
@@ -269,6 +280,8 @@ public class StateModifier {
             state.setCursorY(state.getCursorY() + lines);
             state.setCursorX(split[split.length - 1].length());
         }
+        insert.setAfterCoordAndOffsetY(new  int[] {state.getCursorX(), state.getCursorY()}, 
+        state.getOffsetY());
         clearSelection();
     }
 }

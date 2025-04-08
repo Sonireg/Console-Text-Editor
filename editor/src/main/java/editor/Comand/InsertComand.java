@@ -9,12 +9,20 @@ public class InsertComand implements Comand {
     private final int[] start;
     private final String insertedContent;
     private final String[] lines;
+    private int[] previousCursor;
+    private int previousOffsetY;
+    boolean wasExecuted = false;
+    private int[] afterCursor;
+    private int afterOffsetY;
+
 
     public InsertComand(EditorState state, String insertedContent, int[] position) {
         this.state = state;
         this.start = position.clone();
         this.insertedContent = insertedContent;
         this.lines = insertedContent.split("\\r?\\n|\\r", -1); // поддержка \n, \r и \r\n
+        this.previousCursor = new  int[] {state.getCursorX(), state.getCursorY()};
+        this.previousOffsetY = state.getOffsetY();
     }
 
     public InsertComand(EditorState state, String insertedContent, int[] start, int[] end) {
@@ -22,6 +30,8 @@ public class InsertComand implements Comand {
         this.insertedContent = insertedContent;
         this.start = start.clone(); // куда вставляется
         lines = insertedContent.split("\\r?\\n|\\r", -1); // поддержка \n, \r и \r\n
+        this.previousCursor = new  int[] {state.getCursorX(), state.getCursorY()};
+        this.previousOffsetY = state.getOffsetY();
     }
 
     @Override
@@ -40,6 +50,12 @@ public class InsertComand implements Comand {
             }
             state.getRawContent().add(start[0] + lines.length - 1, newLast);
         }
+        if (wasExecuted) {
+            state.setCursorX(afterCursor[0]);
+            state.setCursorY(afterCursor[1]);
+            state.setOffsetY(afterOffsetY);
+        }
+        wasExecuted = true;
         state.updateContents();
     }
 
@@ -65,5 +81,14 @@ public class InsertComand implements Comand {
         }
 
         state.updateContents();
+        state.setCursorX(previousCursor[0]);
+        state.setCursorY(previousCursor[1]);
+        state.setOffsetY(previousOffsetY);
+    }
+
+    @Override
+    public void setAfterCoordAndOffsetY(int[] afterCursor, int afterOffsestY) {
+        this.afterCursor = afterCursor;
+        this.afterOffsetY = afterOffsestY;
     }
 }

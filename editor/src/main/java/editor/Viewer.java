@@ -14,15 +14,20 @@ import java.util.stream.Stream;
 import editor.TerminalSettings.Terminal;
 import editor.TerminalSettings.TerminalSize;
 import editor.TerminalSettings.WindowsTerminal;
+import editor.TerminalSettings.TerminalSettings;
 
 public class Viewer {
-    private static final int EXIT = 15;
-    private static final int OPENFILE = 14;
-    private static final int SAVEFILE = 19;
+    private static final int EXIT = 15; //ctrl+o
+    private static final int OPENFILE = 14; // cctrl+n
+    private static final int SAVEFILE = 19; // ctrl+s
+    private static final int THEMECHANGE = 20; //ctrl+t
+    private static final int FONTSIZECHANGE = 18; //ctrl+r
+
 
     public static void main(String[] args) throws IOException {
         EditorState state = new EditorState();
         Terminal terminal = new WindowsTerminal();
+        TerminalSettings settings = TerminalSettings.GetInstance();
         InputHandler inputHandler = new InputHandler();
         StateModifier stateModifier = new StateModifier(state, terminal); 
         state.setTerminal(terminal);
@@ -33,6 +38,7 @@ public class Viewer {
         handleNewFile(state, terminal, view);
 
         while (true) {
+            System.out.print(settings.getTheme().apply());
             view.refreshScreen();
             
             int command = inputHandler.handleInput();
@@ -40,6 +46,8 @@ public class Viewer {
                 case EXIT -> exit();
                 case OPENFILE -> handleNewFile(state, terminal, view);
                 case SAVEFILE -> saveFile(state);
+                case FONTSIZECHANGE -> settings.increaseFontSize();
+                case THEMECHANGE -> settings.toggleTheme();
                 default -> stateModifier.handleCommand(command);
             }
             // System.out.println(command);

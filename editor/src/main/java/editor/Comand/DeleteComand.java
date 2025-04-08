@@ -9,9 +9,16 @@ public class DeleteComand implements Comand {
     private int[] start;
     private int[] end;
     private String deletedContent;
+    private int[] previousCursor;
+    private int previousOffsetY;
+    boolean wasExecuted = false;
+    private int[] afterCursor;
+    private int afterOffsetY;
 
     public DeleteComand(EditorState state, String deletedContent, int[] position) {
-        this(state, deletedContent, position, position); // одиночная позиция
+        this(state, deletedContent, position, position);
+        this.previousCursor = new  int[] {state.getCursorX() + 1, state.getCursorY()};
+        this.previousOffsetY = state.getOffsetY();
     }
 
     public DeleteComand(EditorState state, String deletedContent, int[] start, int[] end) {
@@ -19,6 +26,8 @@ public class DeleteComand implements Comand {
         this.start = start;
         this.end = end;
         this.deletedContent = deletedContent;
+        this.previousCursor = new  int[] {state.getCursorX() + 1, state.getCursorY()};
+        this.previousOffsetY = state.getOffsetY();
     }
 
     @Override
@@ -46,7 +55,12 @@ public class DeleteComand implements Comand {
             content.get(start[0]).setLength(0);
             content.get(start[0]).append(prefix).append(suffix);
         }
-
+        if (wasExecuted) {
+            state.setCursorX(afterCursor[0]);
+            state.setCursorY(afterCursor[1]);
+            state.setOffsetY(afterOffsetY);
+        }
+        wasExecuted = true;
         state.updateContents();
     }
 
@@ -67,6 +81,15 @@ public class DeleteComand implements Comand {
             content.get(start[0] + lines.length - 1).append(last);
         }
         state.updateContents();
+        state.setCursorX(previousCursor[0]);
+        state.setCursorY(previousCursor[1]);
+        state.setOffsetY(previousOffsetY);
+    }
+
+    @Override
+    public void setAfterCoordAndOffsetY(int[] afterCursor, int afterOffsestY) {
+        this.afterCursor = afterCursor;
+        this.afterOffsetY = afterOffsestY;
     }
 
 }
