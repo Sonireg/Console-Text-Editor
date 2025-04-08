@@ -60,14 +60,47 @@ public class View {
         int rows = state.getRows();
         int columns = state.getColumns();
 
+        int startX = state.getSelectionStartX();
+        int startY = state.getSelectionStartY();
+        int endX = state.getSelectionEndX();
+        int endY = state.getSelectionEndY();
+
+        // Нормализуем порядок
+        if (startY > endY || (startY == endY && startX > endX)) {
+            int tmpX = startX, tmpY = startY;
+            startX = endX;
+            startY = endY;
+            endX = tmpX;
+            endY = tmpY;
+        }
+
         for (int i = 0; i < rows; i++) {
             int fileI = offsetY + i;
             if (fileI >= content.size()) {
                 builder.append("~");
             } else {
                 StringBuilder line = content.get(fileI);
-                int length = Math.min(columns, Math.max(0, line.length() - offsetX));
-                builder.append(line, offsetX, offsetX + length);
+                int lineLength = line.length();
+                int from = offsetX;
+                int to = Math.min(columns + offsetX, lineLength);
+
+                for (int j = from; j < to; j++) {
+                    boolean selected = false;
+
+                    if (fileI > startY && fileI < endY) {
+                        selected = true;
+                    } else if (fileI == startY && fileI == endY) {
+                        selected = (j >= startX && j < endX);
+                    } else if (fileI == startY) {
+                        selected = (j >= startX);
+                    } else if (fileI == endY) {
+                        selected = (j < endX);
+                    }
+
+                    if (selected) builder.append("\033[7m");
+                    builder.append(line.charAt(j));
+                    if (selected) builder.append("\033[0m");
+                }
             }
             builder.append("\033[K\r\n");
         }

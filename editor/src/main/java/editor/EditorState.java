@@ -15,7 +15,13 @@ public class EditorState {
     private int rows = 10;
     private int columns = 10;
     private Terminal terminal;
+    private String filePath;
+    private int selectionStartX = -1;
+    private int selectionStartY = -1;
+    private int selectionEndX = -1;
+    private int selectionEndY = -1;
 
+    
     public List<StringBuilder> getContent() { return content; }
     public void setContent(List<StringBuilder> content) { this.content = content; }
 
@@ -60,7 +66,79 @@ public class EditorState {
     public Terminal getTerminal() { return terminal; }
     public void setTerminal(Terminal terminal) { this.terminal = terminal; }
 
+    public String getFilePath() { return filePath; }
+    public void setFilePath(String filePath) { this.filePath = filePath; }
+
+    public int getSelectionStartX() { return selectionStartX; }
+    public int getSelectionStartY() { return selectionStartY; }
+
+    public int getSelectionEndX() { return selectionEndX; }
+    public int getSelectionEndY() { return selectionEndY; }
+
+    public int[] getSelectionStartCoordinates() {
+        if (selectionStartY < selectionEndY || 
+            (selectionStartY == selectionEndY && selectionStartX <= selectionEndX)) {
+            return new int[] {selectionStartY, selectionStartX};
+        } else {
+            return new int[] {selectionEndY, selectionEndX};
+        }
+    }
     
+    public int[] getSelectionEndCoordinates() {
+        if (selectionStartY < selectionEndY || 
+            (selectionStartY == selectionEndY && selectionStartX <= selectionEndX)) {
+            return new int[] {selectionEndY, selectionEndX};
+        } else {
+            return new int[] {selectionStartY, selectionStartX};
+        }
+    }
+
+    public void setSelectionStart(int x, int y) {
+        this.selectionStartX = x;
+        this.selectionStartY = y;
+    }
+
+    public void setSelectionEnd(int x, int y) {
+        this.selectionEndX = x;
+        this.selectionEndY = y;
+    }
+
+    // Метод для получения выделенного текста
+    public String getSelectedText() {
+        if (selectionStartX == -1 || selectionStartY == -1 || selectionEndX == -1 || selectionEndY == -1) {
+            return "";
+        }
+    
+        int startX = selectionStartX;
+        int startY = selectionStartY;
+        int endX = selectionEndX;
+        int endY = selectionEndY;
+    
+        // Упорядочим координаты, если нужно
+        if (startY > endY || (startY == endY && startX > endX)) {
+            int tmpX = startX;
+            int tmpY = startY;
+            startX = endX;
+            startY = endY;
+            endX = tmpX;
+            endY = tmpY;
+        }
+    
+        StringBuilder selectedText = new StringBuilder();
+        
+        for (int i = startY; i <= endY; i++) {
+            StringBuilder line = rawContent.get(i);
+            int start = (i == startY) ? startX : 0;
+            int end = (i == endY) ? endX : line.length();
+    
+            selectedText.append(line.substring(start, end));
+            if (i < endY) {
+                selectedText.append("\n");
+            }
+        }
+    
+        return selectedText.toString();
+    }
 
     /**
      * Converts wrapped coordinates (cursorY) to raw coordinates
@@ -146,5 +224,8 @@ public class EditorState {
         return result;
     }
 
+    public boolean hasSelection() {
+        return selectionStartX != selectionEndX || selectionStartY != selectionEndY;
+    }
     
 }

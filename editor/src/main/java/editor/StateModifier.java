@@ -4,6 +4,7 @@ import java.util.List;
 
 import editor.Comand.*;
 import editor.TerminalSettings.Terminal;
+import editor.ClipboardManager;
 
 public class StateModifier {
     private final EditorState state;
@@ -14,10 +15,17 @@ public class StateModifier {
     private static final int BACKSPACE = 127;
     private static final int UNDO = -1;
     private static final int REDO = 21;
-    private static final int NEW_LINE = 13;
-    
+    private static final int SELECTION_UP = 1065;
+    private static final int SELECTION_DOWN = 1066;
+    private static final int SELECTION_LEFT = 1068;
+    private static final int SELECTION_RIGHT = 1067;
+    private static final int COPY = 3;    
+    private static final int PASTE = 22;
+
 
     ComandManager commandManager = new ComandManager();
+
+
 
     public StateModifier(EditorState state, Terminal terminal) {
         this.state = state;
@@ -25,17 +33,47 @@ public class StateModifier {
 
     public void handleCommand(int command) {
         switch (command) {
-            case ARROW_UP -> moveUp();
-            case ARROW_DOWN -> moveDown();
-            case ARROW_LEFT -> moveLeft();
-            case ARROW_RIGHT -> moveRight();
-            case BACKSPACE -> deleteSymbol();
-            case UNDO -> commandManager.undo();
-            case REDO -> commandManager.redo();
-            default -> { addSymbol(command); }
+            case ARROW_UP -> {
+                moveUp();
+                clearSelection();
+            }
+            case ARROW_DOWN -> {
+                moveDown();
+                clearSelection();
+            }
+            case ARROW_LEFT -> {
+                moveLeft();
+                clearSelection();
+            }
+            case ARROW_RIGHT -> {
+                moveRight();
+                clearSelection();
+            }
+            case BACKSPACE -> deleteSelectionOrSymbol(); // NEW
+            case UNDO -> {
+                commandManager.undo();
+                clearSelection();
+                anchorCursor();
+            }
+            case REDO -> {
+                commandManager.redo();
+                clearSelection();
+                anchorCursor();
+            }
+            case SELECTION_LEFT -> selectLeft();
+            case SELECTION_RIGHT -> selectRight();
+            case SELECTION_UP -> selectUp();
+            case SELECTION_DOWN -> selectDown();
+            case COPY -> ClipboardManager.copyToClipboard(state.getSelectedText()); // already fine
+            case PASTE -> pasteClipboard(); // NEW
+            default -> {
+                insertReplacingSelection((char) command); // NEW
+                clearSelection();
+            }
         }
     }
-
+    
+     
     private void moveUp() {
         int cursorY = state.getCursorY();
         if (cursorY > 0) state.setCursorY(cursorY - 1);
@@ -44,10 +82,7 @@ public class StateModifier {
 
     private void moveDown() {
         int cursorY = state.getCursorY();
-        if (cursorY + state.getOffsetY() >= state.getContent().size() - 1){
-            return;
-        }
-        if (cursorY < state.getContent().size()) state.setCursorY(cursorY + 1);
+        if (cursorY < state.getContent().size() - 1) state.setCursorY(cursorY + 1);
         anchorCursor();
     }
 
@@ -87,47 +122,153 @@ public class StateModifier {
             state.setCursorX(lineLength);
         }
     }
-
-    private void addSymbol(int pressedButton) {
-        Comand newComand = new InsertComand(state, 
-                                            String.valueOf((char) pressedButton), 
-                                            state.getRawCoordinates());
-        commandManager.execute(newComand);
-        if (pressedButton != NEW_LINE) {
-            moveRight();
-        }
-        else {
-            moveDown();
-            state.setCursorX(0);
-        }
-    }
     
     private void deleteSymbol() {
-        int[] deletionPos = state.getRawCoordinates();
-        if (deletionPos[0] == 0 && deletionPos[1] == 0) {
-            return;
-        }
-        String deletedContent = "\n";
-        if (deletionPos[1] != 0) {
-            deletedContent = 
-            String.valueOf(state.getRawContent().get(deletionPos[0]).charAt(deletionPos[1] - 1));
-        }
-        Comand newComand = new DeleteComand(state, 
-                                            deletedContent, 
-                                            deletionPos);
-        
-        if (deletedContent != "\n") {
+        int[] pos = state.getRawCoordinates();
+    
+        if (pos[0] == 0 && pos[1] == 0) return;
+    
+        String deletedContent;
+        int[] start;
+        int[] end = pos.clone();
+    
+        if (pos[1] != 0) {
+            // удаление символа внутри строки
+            start = new int[] {pos[0], pos[1] - 1};
+            deletedContent = String.valueOf(state.getRawContent().get(pos[0]).charAt(pos[1] - 1));
             moveLeft();
-            commandManager.execute(newComand);
-            return;
+        } else {
+            // удаление переноса строки
+            int prevLine = pos[0] - 1;
+            int prevLen = state.getRawContent().get(prevLine).length();
+            start = new int[] {prevLine, prevLen};
+            deletedContent = "\n";
+            state.setCursorY(prevLine);
+            state.setCursorX(prevLen);
         }
-        
-        
-        state.setCursorX(state.getContent().get(state.getOffsetY()+state.getCursorY()).length());
-        moveUp();
-        commandManager.execute(newComand);
-        
+    
+        Comand delete = new DeleteComand(state, deletedContent, start, end);
+        commandManager.execute(delete);
     }
 
+    private void clearSelection() {
+        state.setSelectionStart(state.getCursorX(), state.getCursorY());
+        state.setSelectionEnd(state.getCursorX(), state.getCursorY());
+    }
+
+
+    private void selectLeft() {
+        ensureSelectionStarted();
+        int cursorX = state.getCursorX();
+        int cursorY = state.getCursorY();
+        if (cursorX > 0) {
+            state.setCursorX(cursorX - 1);
+        } else if (cursorY > 0) {
+            state.setCursorY(cursorY - 1);
+            state.setCursorX(state.getContent().get(state.getCursorY()).length());
+        }
+        anchorCursor();
+        state.setSelectionEnd(state.getCursorX(), state.getCursorY());
+    }
     
+
+    private void selectRight() {
+        ensureSelectionStarted();
+        List<StringBuilder> content = state.getContent();
+        int cursorX = state.getCursorX();
+        int cursorY = state.getCursorY();
+        StringBuilder line = cursorY < content.size() ? content.get(cursorY) : null;
+    
+        if (line != null && cursorX < line.length()) {
+            state.setCursorX(cursorX + 1);
+        } else if (cursorY < content.size() - 1) {
+            state.setCursorY(cursorY + 1);
+            state.setCursorX(0);
+        }
+        anchorCursor();
+        state.setSelectionEnd(state.getCursorX(), state.getCursorY());
+    }
+    
+
+    private void selectUp() {
+        ensureSelectionStarted();
+        int cursorY = state.getCursorY();
+        if (cursorY > 0) {
+            state.setCursorY(cursorY - 1);
+        }
+        anchorCursor();
+        state.setSelectionEnd(state.getCursorX(), state.getCursorY());
+    }
+    
+
+    private void selectDown() {
+        ensureSelectionStarted();
+        int cursorY = state.getCursorY();
+        if (cursorY < state.getContent().size() - 1) {
+            state.setCursorY(cursorY + 1);
+        }
+        anchorCursor();
+        state.setSelectionEnd(state.getCursorX(), state.getCursorY());
+    }
+
+
+    private void ensureSelectionStarted() {
+        if (state.getSelectionStartX() == state.getSelectionEndX() &&
+            state.getSelectionStartY() == state.getSelectionEndY()) {
+            state.setSelectionStart(state.getCursorX(), state.getCursorY());
+        }
+    }
+
+    private void deleteSelectionOrSymbol() {
+        if (state.hasSelection()) {
+            int[] start = state.getSelectionStartCoordinates();
+            int[] end = state.getSelectionEndCoordinates();
+            String deletedText = state.getSelectedText();
+    
+            Comand delete = new DeleteComand(state, deletedText, start, end);
+            commandManager.execute(delete);
+    
+            state.setCursorX(start[1]);
+            state.setCursorY(start[0]);
+            clearSelection();
+        } else {
+            deleteSymbol();
+        }
+    }
+    
+    private void insertReplacingSelection(char ch) {
+        if (state.hasSelection()) {
+            deleteSelectionOrSymbol();
+        }
+        Comand insert = new InsertComand(state, String.valueOf(ch), state.getRawCoordinates());
+        commandManager.execute(insert);
+        if (ch == '\n') {
+            moveDown();
+            state.setCursorX(0);
+        } else {
+            moveRight();
+        }
+    }
+    
+    private void pasteClipboard() {
+        String pasteText = ClipboardManager.pasteFromClipboard();
+        if (pasteText == null || pasteText.isEmpty()) return;
+    
+        if (state.hasSelection()) {
+            deleteSelectionOrSymbol();
+        }
+    
+        Comand insert = new InsertComand(state, pasteText, state.getRawCoordinates());
+        commandManager.execute(insert);
+
+        int lines = pasteText.split("\n", -1).length - 1;
+        if (lines == 0) {
+            state.setCursorX(state.getCursorX() + pasteText.length());
+        } else {
+            String[] split = pasteText.split("\n", -1);
+            state.setCursorY(state.getCursorY() + lines);
+            state.setCursorX(split[split.length - 1].length());
+        }
+        clearSelection();
+    }
 }

@@ -1,6 +1,9 @@
 package editor;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
@@ -15,6 +18,8 @@ import editor.TerminalSettings.WindowsTerminal;
 public class Viewer {
     private static final int EXIT = 15;
     private static final int OPENFILE = 14;
+    private static final int SAVEFILE = 19;
+
     public static void main(String[] args) throws IOException {
         EditorState state = new EditorState();
         Terminal terminal = new WindowsTerminal();
@@ -34,6 +39,7 @@ public class Viewer {
             switch (command) {
                 case EXIT -> exit();
                 case OPENFILE -> handleNewFile(state, terminal, view);
+                case SAVEFILE -> saveFile(state);
                 default -> stateModifier.handleCommand(command);
             }
             // System.out.println(command);
@@ -55,6 +61,7 @@ public class Viewer {
             openFile(state, filePath);
         }
         initEditor(state);
+        state.setFilePath(filePath);
     }
 
     private static void openFile(EditorState state, String inpath) {
@@ -64,6 +71,23 @@ public class Viewer {
                 state.setRawContent(new ArrayList<>(stream.map(StringBuilder::new).toList()));
             } catch (IOException e) {
                 e.printStackTrace();
+            }
+        }
+    }
+
+    private static void saveFile(EditorState state) throws IOException {
+        File file = new File(state.getFilePath());
+        
+        // Проверяем, существует ли файл и если нет, создаем его
+        if (!file.exists()) {
+            file.createNewFile();
+        }
+
+        // Используем BufferedWriter для записи в файл
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+            for (StringBuilder line : state.getRawContent()) {
+                writer.write(line.toString()); // Записываем строку
+                writer.newLine(); // Переход на новую строку
             }
         }
     }
