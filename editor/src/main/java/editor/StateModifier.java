@@ -14,7 +14,7 @@ public class StateModifier {
     private static final int BACKSPACE = 127;
     private static final int UNDO = -1;
     private static final int REDO = 21;
-    private static final int EXIT = 15;
+    private static final int NEW_LINE = 13;
     
 
     ComandManager commandManager = new ComandManager();
@@ -32,7 +32,6 @@ public class StateModifier {
             case BACKSPACE -> deleteSymbol();
             case UNDO -> commandManager.undo();
             case REDO -> commandManager.redo();
-            case EXIT -> exit();
             default -> { addSymbol(command); }
         }
     }
@@ -45,6 +44,9 @@ public class StateModifier {
 
     private void moveDown() {
         int cursorY = state.getCursorY();
+        if (cursorY + state.getOffsetY() >= state.getContent().size() - 1){
+            return;
+        }
         if (cursorY < state.getContent().size()) state.setCursorY(cursorY + 1);
         anchorCursor();
     }
@@ -87,22 +89,45 @@ public class StateModifier {
     }
 
     private void addSymbol(int pressedButton) {
-        Comand newComand = new InsertComand(state, String.valueOf((char) pressedButton), state.getRawCoordinates());
+        Comand newComand = new InsertComand(state, 
+                                            String.valueOf((char) pressedButton), 
+                                            state.getRawCoordinates());
         commandManager.execute(newComand);
-        moveRight();
+        if (pressedButton != NEW_LINE) {
+            moveRight();
+        }
+        else {
+            moveDown();
+            state.setCursorX(0);
+        }
     }
     
     private void deleteSymbol() {
         int[] deletionPos = state.getRawCoordinates();
+        if (deletionPos[0] == 0 && deletionPos[1] == 0) {
+            return;
+        }
+        String deletedContent = "\n";
+        if (deletionPos[1] != 0) {
+            deletedContent = 
+            String.valueOf(state.getRawContent().get(deletionPos[0]).charAt(deletionPos[1] - 1));
+        }
         Comand newComand = new DeleteComand(state, 
-                                            String.valueOf(state.getRawContent().get(deletionPos[0]).charAt(deletionPos[1])), 
+                                            deletedContent, 
                                             deletionPos);
+        
+        if (deletedContent != "\n") {
+            moveLeft();
+            commandManager.execute(newComand);
+            return;
+        }
+        
+        
+        state.setCursorX(state.getContent().get(state.getOffsetY()+state.getCursorY()).length());
+        moveUp();
         commandManager.execute(newComand);
-        moveLeft();
+        
     }
 
-    private void exit() {
-        System.out.print("\033[2J\033[H");
-        System.exit(0);
-    }
+    
 }

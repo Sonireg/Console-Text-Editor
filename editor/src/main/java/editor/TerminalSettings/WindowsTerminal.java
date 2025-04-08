@@ -44,10 +44,14 @@ public class WindowsTerminal implements Terminal {
     @Override
     public void disableRawMode() {
         Pointer inHandle = Kernel32.INSTANCE.GetStdHandle(Kernel32.STD_INPUT_HANDLE);
-        Kernel32.INSTANCE.SetConsoleMode(inHandle, inMode.getValue());
 
-        Pointer outHandle = Kernel32.INSTANCE.GetStdHandle(Kernel32.STD_OUTPUT_HANDLE);
-        Kernel32.INSTANCE.SetConsoleMode(outHandle, outMode.getValue());
+        Kernel32.INSTANCE.SetConsoleMode(inHandle,
+            Kernel32.ENABLE_ECHO_INPUT
+            | Kernel32.ENABLE_LINE_INPUT
+            | Kernel32.ENABLE_MOUSE_INPUT
+            | Kernel32.ENABLE_WINDOW_INPUT
+            | Kernel32.ENABLE_PROCESSED_INPUT
+        );
     }
 
 

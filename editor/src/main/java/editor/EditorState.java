@@ -26,6 +26,20 @@ public class EditorState {
         this.content = cutLines(content);
     }
 
+    public void updateContents() {
+        List<StringBuilder> newContent = new ArrayList<>();
+    
+        for (StringBuilder line : rawContent) {
+            String[] parts = line.toString().split("\r", -1);
+            for (String part : parts) {
+                newContent.add(new StringBuilder(part));
+            }
+        }
+        this.rawContent = newContent;
+    
+        this.content = cutLines(newContent);
+    }
+
     public int getCursorX() { return cursorX; }
     public void setCursorX(int cursorX) { this.cursorX = cursorX; }
 
@@ -36,7 +50,6 @@ public class EditorState {
     public void setOffsetY(int offsetY) { this.offsetY = offsetY; }
 
     public int getOffsetX() { return offsetX; }
-    public void setOffsetX(int offsetX) { this.offsetX = offsetX; }
 
     public int getRows() { return rows; }
     public void setRows(int rows) { this.rows = rows; }
@@ -63,6 +76,17 @@ public class EditorState {
         int wrappedLineCount = 0;
         for (int i = 0; i < rawContent.size(); i++) {
             StringBuilder rawLine = rawContent.get(i);
+            
+            // Если строка пуста, она все равно должна быть обработана
+            if (rawLine.length() == 0) {
+                wrappedLineCount++;
+                if (cursorY < wrappedLineCount) {
+                    return i;
+                }
+                continue;
+            }
+            
+            // Количество обернутых строк для текущей строки
             int wrappedLinesForThisRawLine = (int) Math.ceil((double) rawLine.length() / (columns - 3));
             
             if (cursorY < wrappedLineCount + wrappedLinesForThisRawLine) {
@@ -70,28 +94,36 @@ public class EditorState {
             }
             wrappedLineCount += wrappedLinesForThisRawLine;
         }
-        return rawContent.size() - 1;
+        return rawContent.size() - 1; // В случае, если ничего не найдено, возвращаем последнюю строку
     }
-
-    /**
-     * Finds the position in the raw line that corresponds to the current cursor position
-     * @return character position in the original raw line
-     */
+    
     private int getCurrentRawPosition() {
         int wrappedLineCount = 0;
         for (int i = 0; i < rawContent.size(); i++) {
             StringBuilder rawLine = rawContent.get(i);
+    
+            // Если строка пуста, увеличиваем wrappedLineCount, но не считаем позицию
+            if (rawLine.length() == 0) {
+                wrappedLineCount++;
+                if (cursorY < wrappedLineCount) {
+                    return 0; // Для пустой строки возвращаем 0, так как позиция в пустой строке всегда 0
+                }
+                continue;
+            }
+    
+            // Количество обернутых строк для текущей строки
             int wrappedLinesForThisRawLine = (int) Math.ceil((double) rawLine.length() / (columns - 3));
             
             if (cursorY < wrappedLineCount + wrappedLinesForThisRawLine) {
-                // Calculate which segment of the wrapped line we're in
+                // Определяем позицию на текущей строке
                 int segment = cursorY - wrappedLineCount;
                 return (segment * (columns - 3)) + cursorX;
             }
             wrappedLineCount += wrappedLinesForThisRawLine;
         }
-        return rawContent.get(rawContent.size() - 1).length();
+        return rawContent.get(rawContent.size() - 1).length(); // Возвращаем длину последней строки, если курсор в последней строке
     }
+    
 
     private List<StringBuilder> cutLines(List<StringBuilder> lines) {
         int maxLength = terminal.getTerminalSize().width() - 3;
@@ -113,4 +145,6 @@ public class EditorState {
         
         return result;
     }
+
+    
 }
