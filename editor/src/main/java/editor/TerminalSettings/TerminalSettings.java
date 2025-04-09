@@ -1,7 +1,6 @@
 package editor.TerminalSettings;
 
 public class TerminalSettings {
-    private int fontSize;
     private static TerminalSettings instance = null;
     private TerminalTheme[] themes = new TerminalTheme[]{TerminalTheme.DARK, 
                                                          TerminalTheme.LIGHT, 
@@ -10,24 +9,11 @@ public class TerminalSettings {
 
     private TerminalSettings() {
         currentTheme = 0;
-        fontSize = 12;
     }
 
     public static TerminalSettings GetInstance() {
         if (instance == null) TerminalSettings.instance = new TerminalSettings();  
         return instance;
-    }
-
-    public int getFontSize() {
-        return fontSize;
-    }
-
-    public void increaseFontSize() {
-        fontSize = Math.min(fontSize + 1, 24);
-    }
-
-    public void decreaseFontSize() {
-        fontSize = Math.max(fontSize - 1, 6);
     }
 
     public TerminalTheme getTheme() {

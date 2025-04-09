@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import editor.Parsers.TXTPArser;
-import editor.TerminalSettings.Terminal;
 
 public class EditorState {
     private List<StringBuilder> content = List.of();

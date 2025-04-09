@@ -97,4 +97,37 @@ public class NavigationHandler {
     private void anchorCursor() {
         helper.anchorCursor();
     }
+
+    // Поиск подстроки после текущего положения курсора (с цикличностью)
+    public void search(String searchText) {
+        int cursorX = state.getCursorX();
+        int cursorY = state.getCursorY();
+        List<StringBuilder> content = state.getContent();
+
+        for (int i = cursorY; i < content.size(); i++) {
+            StringBuilder line = state.getContent().get(i);
+            int index = line.indexOf(searchText, (i == cursorY) ? cursorX : 0);
+
+            if (index != -1) {
+                state.setCursorX(index + searchText.length());
+                state.setCursorY(i);
+                state.setSelectionStart(index, i);
+                state.setSelectionEnd(index + searchText.length(), i);
+                return;
+            }
+        }
+
+        for (int i = 0; i < cursorY; i++) {
+            StringBuilder line = state.getContent().get(i);
+            int index = line.indexOf(searchText);
+
+            if (index != -1) {
+                state.setCursorX(index + searchText.length());
+                state.setCursorY(i);
+                state.setSelectionStart(index, i);
+                state.setSelectionEnd(index + searchText.length(), i);
+                return;
+            }
+        }
+    }
 }

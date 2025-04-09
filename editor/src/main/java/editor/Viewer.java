@@ -18,12 +18,10 @@ import editor.TerminalSettings.TerminalSize;
 import editor.TerminalSettings.WindowsTerminal;
 import editor.TerminalSettings.TerminalSettings;
 
+import editor.BasicEditor.Keys;
+
 public class Viewer {
-    private static final int EXIT = 15; //ctrl+o
-    private static final int OPENFILE = 14; // cctrl+n
-    private static final int SAVEFILE = 19; // ctrl+s
-    private static final int THEMECHANGE = 20; //ctrl+t
-    private static final int FONTSIZECHANGE = 18; //ctrl+r
+    
 
 
     public static void main(String[] args) throws IOException {
@@ -32,7 +30,7 @@ public class Viewer {
         TerminalSettings settings = TerminalSettings.GetInstance();
         InputHandler inputHandler = new InputHandler();
 
-        EditorCommandDispatcher dispatcher = new EditorCommandDispatcher(state);
+        EditorCommandDispatcher dispatcher = new EditorCommandDispatcher(state, terminal);
 
         state.setMaxLength(terminal.getTerminalSize().width() - 5);
         terminal.enableRawMode();
@@ -46,11 +44,10 @@ public class Viewer {
             
             int command = inputHandler.handleInput();
             switch (command) {
-                case EXIT -> exit();
-                case OPENFILE -> handleNewFile(state, terminal, view);
-                case SAVEFILE -> saveFile(state);
-                case FONTSIZECHANGE -> settings.increaseFontSize();
-                case THEMECHANGE -> settings.toggleTheme();
+                case Keys.EXIT -> exit();
+                case Keys.OPENFILE -> handleNewFile(state, terminal, view);
+                case Keys.SAVEFILE -> saveFile(state);
+                case Keys.THEMECHANGE -> settings.toggleTheme();
                 default -> dispatcher.handleCommand(command);
             }
             // System.out.println(command);
