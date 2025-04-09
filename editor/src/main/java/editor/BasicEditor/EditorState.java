@@ -3,6 +3,7 @@ package editor.BasicEditor;
 import java.util.ArrayList;
 import java.util.List;
 
+import editor.Parsers.TXTPArser;
 import editor.TerminalSettings.Terminal;
 
 public class EditorState {
@@ -14,13 +15,13 @@ public class EditorState {
     private int offsetX = 0;
     private int rows = 10;
     private int columns = 10;
-    private Terminal terminal;
+    private int maxLength = 10;
     private String filePath;
     private int selectionStartX = -1;
     private int selectionStartY = -1;
     private int selectionEndX = -1;
     private int selectionEndY = -1;
-
+    TXTPArser parser = new TXTPArser();
     
     public List<StringBuilder> getContent() { return content; }
     public void setContent(List<StringBuilder> content) { this.content = content; }
@@ -29,7 +30,7 @@ public class EditorState {
     public List<StringBuilder> getRawContent() { return rawContent; }
     public void setRawContent(List<StringBuilder> content) { 
         this.rawContent = content; 
-        this.content = cutLines(content);
+        this.content = parser.parse(rawContent, maxLength);
     }
 
     public void updateContents() {
@@ -43,7 +44,7 @@ public class EditorState {
         }
         this.rawContent = newContent;
     
-        this.content = cutLines(newContent);
+        this.content = parser.parse(rawContent, maxLength);
     }
 
     public int getCursorX() { return cursorX; }
@@ -63,9 +64,6 @@ public class EditorState {
     public int getColumns() { return columns; }
     public void setColumns(int columns) { this.columns = columns; }
 
-    public Terminal getTerminal() { return terminal; }
-    public void setTerminal(Terminal terminal) { this.terminal = terminal; }
-
     public String getFilePath() { return filePath; }
     public void setFilePath(String filePath) { this.filePath = filePath; }
 
@@ -74,6 +72,9 @@ public class EditorState {
 
     public int getSelectionEndX() { return selectionEndX; }
     public int getSelectionEndY() { return selectionEndY; }
+
+    public int getMaxLength() { return maxLength; }
+    public void setMaxLength(int maxLength) { this.maxLength = maxLength; }
 
     public int[] getSelectionStartCoordinates() {
         if (selectionStartY < selectionEndY || 
@@ -203,26 +204,7 @@ public class EditorState {
     }
     
 
-    private List<StringBuilder> cutLines(List<StringBuilder> lines) {
-        int maxLength = terminal.getTerminalSize().width() - 3;
-        List<StringBuilder> result = new ArrayList<>();
-        
-        for (StringBuilder line : lines) {
-            if (line.length() <= maxLength) {
-                result.add(line);
-                continue;
-            }
-            
-            int start = 0;
-            while (start < line.length()) {
-                int end = Math.min(start + maxLength, line.length());
-                result.add(new StringBuilder(line.substring(start, end)));
-                start = end;
-            }
-        }
-        
-        return result;
-    }
+    
 
     public boolean hasSelection() {
         return selectionStartX != selectionEndX || selectionStartY != selectionEndY;

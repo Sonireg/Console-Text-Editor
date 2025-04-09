@@ -34,9 +34,9 @@ public class Viewer {
 
         EditorCommandDispatcher dispatcher = new EditorCommandDispatcher(state);
 
-        state.setTerminal(terminal);
+        state.setMaxLength(terminal.getTerminalSize().width() - 5);
         terminal.enableRawMode();
-        initEditor(state);
+        initEditor(state, terminal);
 
         View view = new View(state, terminal);
         handleNewFile(state, terminal, view);
@@ -71,7 +71,7 @@ public class Viewer {
             }
             openFile(state, filePath);
         }
-        initEditor(state);
+        initEditor(state, terminal);
         state.setFilePath(filePath);
     }
 
@@ -103,8 +103,8 @@ public class Viewer {
         }
     }
 
-    private static void initEditor(EditorState state) {
-        TerminalSize size = state.getTerminal().getTerminalSize();
+    private static void initEditor(EditorState state, Terminal terminal) {
+        TerminalSize size = terminal.getTerminalSize();
         state.setColumns(size.width());
         state.setRows(size.height() - 1);
     }
