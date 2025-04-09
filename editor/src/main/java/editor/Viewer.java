@@ -11,6 +11,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.stream.Stream;
 
+import editor.BasicEditor.EditorCommandDispatcher;
+import editor.BasicEditor.EditorState;
 import editor.TerminalSettings.Terminal;
 import editor.TerminalSettings.TerminalSize;
 import editor.TerminalSettings.WindowsTerminal;
@@ -29,7 +31,9 @@ public class Viewer {
         Terminal terminal = new WindowsTerminal();
         TerminalSettings settings = TerminalSettings.GetInstance();
         InputHandler inputHandler = new InputHandler();
-        StateModifier stateModifier = new StateModifier(state, terminal); 
+
+        EditorCommandDispatcher dispatcher = new EditorCommandDispatcher(state);
+
         state.setTerminal(terminal);
         terminal.enableRawMode();
         initEditor(state);
@@ -38,7 +42,6 @@ public class Viewer {
         handleNewFile(state, terminal, view);
 
         while (true) {
-            System.out.print(settings.getTheme().apply());
             view.refreshScreen();
             
             int command = inputHandler.handleInput();
@@ -48,7 +51,7 @@ public class Viewer {
                 case SAVEFILE -> saveFile(state);
                 case FONTSIZECHANGE -> settings.increaseFontSize();
                 case THEMECHANGE -> settings.toggleTheme();
-                default -> stateModifier.handleCommand(command);
+                default -> dispatcher.handleCommand(command);
             }
             // System.out.println(command);
         }

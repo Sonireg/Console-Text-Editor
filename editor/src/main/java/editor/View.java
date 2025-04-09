@@ -2,7 +2,9 @@ package editor;
 
 import java.util.List;
 
+import editor.BasicEditor.EditorState;
 import editor.TerminalSettings.Terminal;
+import editor.TerminalSettings.TerminalSettings;
 
 public class View {
     private final EditorState state;
@@ -96,13 +98,14 @@ public class View {
                     } else if (fileI == endY) {
                         selected = (j < endX);
                     }
-
+                    builder.append(TerminalSettings.GetInstance().getTheme().apply());
                     if (selected) builder.append("\033[7m");
                     builder.append(line.charAt(j));
                     if (selected) builder.append("\033[0m");
                 }
             }
             builder.append("\033[K\r\n");
+            
         }
     }
 }

@@ -1,4 +1,4 @@
-package editor;
+package editor.BasicEditor;
 
 import java.awt.datatransfer.*;
 import java.awt.Toolkit;

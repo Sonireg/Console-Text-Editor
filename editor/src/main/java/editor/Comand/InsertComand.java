@@ -2,7 +2,7 @@ package editor.Comand;
 
 import java.util.List;
 
-import editor.EditorState;
+import editor.BasicEditor.EditorState;
 
 public class InsertComand implements Comand {
     private final EditorState state;
