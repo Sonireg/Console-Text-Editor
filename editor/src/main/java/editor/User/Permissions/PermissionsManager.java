@@ -48,13 +48,14 @@ public class PermissionsManager {
 
     // ---------- PERMISSIONS LOGIC ----------
     public FilePermissions getOrCreatePermissions(String filename, String adminUsername) {
-        return filePermissions.computeIfAbsent(filename, f -> {
+        if (!filePermissions.containsKey(filename)) {
             FilePermissions perms = new FilePermissions();
             perms.setAdmin(adminUsername);
             filePermissions.put(filename, perms);
             savePermissions();
             return perms;
-        });
+        }
+        return filePermissions.get(filename);
     }
 
     public void setPermissions(String filename, FilePermissions permissions) {

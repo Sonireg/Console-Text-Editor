@@ -1,9 +1,8 @@
 package editor.BasicEditor;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -11,6 +10,8 @@ import java.util.stream.Stream;
 
 import editor.BasicEditor.Inputs.Keys;
 import editor.BasicEditor.Inputs.RawInputHandler;
+import editor.BasicEditor.Saving.SaveManager;
+import editor.BasicEditor.Saving.SaveOptions;
 import editor.Parsers.TXTPArser;
 import editor.TerminalSettings.Terminal;
 import editor.TerminalSettings.TerminalSize;
@@ -64,23 +65,6 @@ public class EditorViewer {
         }
     }
 
-    private static void saveFile(EditorState state) throws IOException {
-        File file = new File(state.getFilePath());
-        
-        // Проверяем, существует ли файл и если нет, создаем его
-        if (!file.exists()) {
-            file.createNewFile();
-        }
-
-        // Используем BufferedWriter для записи в файл
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-            for (StringBuilder line : state.getRawContent()) {
-                writer.write(line.toString()); // Записываем строку
-                writer.newLine(); // Переход на новую строку
-            }
-        }
-    }
-
     private static void initEditor(EditorState state, Terminal terminal) {
         TerminalSize size = terminal.getTerminalSize();
         state.setColumns(size.width());
@@ -89,5 +73,37 @@ public class EditorViewer {
 
     private static void exit() {
         System.out.print("\033[2J\033[H");
+    }
+
+    private static void saveFile(EditorState state) throws IOException {
+        SaveOptions options = promptSaveOptions(new WindowsTerminal(), state.getFilePath());
+        if (options == null) return;
+
+        SaveManager saveManager = new SaveManager();
+        saveManager.save(state, options);
+    }
+
+    private static SaveOptions promptSaveOptions(Terminal terminal, String currentFilePath) throws IOException {
+        System.out.print("\033[2J\033[H");
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        terminal.disableRawMode(); // Чтобы можно было нормально вводить
+
+        System.out.println("Введите название нового файла: ");
+        String newName = reader.readLine().trim().toUpperCase();
+
+        System.out.println("Выберите формат сохранения (txt, md, rtf, json, xml): ");
+        String formatStr = reader.readLine().trim().toUpperCase();
+
+        terminal.enableRawMode(); // Возвращаем raw mode
+
+        SaveOptions.Format format;
+        try {
+            format = SaveOptions.Format.valueOf(formatStr);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Неверный формат. Сохранение отменено.");
+            return null;
+        }
+
+        return new SaveOptions(currentFilePath, format, newName);
     }
 }

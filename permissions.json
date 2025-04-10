@@ -2,7 +2,12 @@
   "TestFiles/test.txt": {
     "admin": "denis",
     "editors": [
-      "anna"
+      "anna",
+      "n"
     ]
+  },
+  "TestFiles/tets.txt": {
+    "admin": "anna",
+    "editors": []
   }
 }
