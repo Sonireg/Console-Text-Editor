@@ -3,7 +3,7 @@ package editor.BasicEditor;
 import java.util.ArrayList;
 import java.util.List;
 
-import editor.Parsers.TXTPArser;
+import editor.Parsers.*;
 
 public class EditorState {
     private List<StringBuilder> content = List.of();
@@ -20,8 +20,12 @@ public class EditorState {
     private int selectionStartY = -1;
     private int selectionEndX = -1;
     private int selectionEndY = -1;
-    TXTPArser parser = new TXTPArser();
+    Parser parser = new TXTPArser();
     
+    public void setParser(Parser parser) {
+        this.parser = parser;
+    }
+
     public List<StringBuilder> getContent() { return content; }
     public void setContent(List<StringBuilder> content) { this.content = content; }
 

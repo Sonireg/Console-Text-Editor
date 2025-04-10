@@ -1,4 +1,4 @@
-package editor;
+package editor.Viewer;
 
 import java.util.List;
 
@@ -8,9 +8,11 @@ import editor.TerminalSettings.TerminalSettings;
 
 public class View {
     private final EditorState state;
+    private final Terminal terminal;
 
     public View(EditorState state, Terminal terminal) {
         this.state = state;
+        this.terminal = terminal;
     }
 
     public void refreshScreen() {
@@ -20,7 +22,9 @@ public class View {
         drawContent(builder);
         drawStatusBar(builder);
         drawCursor(builder);
+        terminal.disableRawMode();
         System.out.print(builder);
+        terminal.enableRawMode();
     }
 
     private void adjustScroll() {

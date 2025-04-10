@@ -21,8 +21,7 @@ public class DeleteComand implements Comand {
         this.previousOffsetY = state.getOffsetY();
     }
 
-    public DeleteComand(EditorState state, String deletedContent, int[] start, int[] end) {
-        this.state = state;
+    public DeleteComand(EditorState state, String deletedContent, int[] start, int[] end) {        this.state = state;
         this.start = start;
         this.end = end;
         this.deletedContent = deletedContent;

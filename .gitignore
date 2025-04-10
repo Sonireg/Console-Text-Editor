@@ -28,3 +28,5 @@ replay_pid*
 #save files for project
 *.save
 *.txt
+
+test.md
