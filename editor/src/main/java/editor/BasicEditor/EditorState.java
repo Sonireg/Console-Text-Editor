@@ -113,35 +113,69 @@ public class EditorState {
             return "";
         }
     
-        int startX = selectionStartX;
-        int startY = selectionStartY;
-        int endX = selectionEndX;
-        int endY = selectionEndY;
+        int[] startContentCoords = new int[]{selectionStartY, selectionStartX};
+        int[] endContentCoords = new int[]{selectionEndY, selectionEndX};
     
         // Упорядочим координаты, если нужно
-        if (startY > endY || (startY == endY && startX > endX)) {
-            int tmpX = startX;
-            int tmpY = startY;
-            startX = endX;
-            startY = endY;
-            endX = tmpX;
-            endY = tmpY;
+        if (selectionStartY > selectionEndY || (selectionStartY == selectionEndY && selectionStartX > selectionEndX)) {
+            startContentCoords = new int[]{selectionEndY, selectionEndX};
+            endContentCoords = new int[]{selectionStartY, selectionStartX};
         }
     
-        StringBuilder selectedText = new StringBuilder();
-        
-        for (int i = startY; i <= endY; i++) {
-            StringBuilder line = rawContent.get(i);
-            int start = (i == startY) ? startX : 0;
-            int end = (i == endY) ? endX : line.length();
+        int[] startRawCoords = convertToRawCoordinates(startContentCoords);
+        int[] endRawCoords = convertToRawCoordinates(endContentCoords);
     
-            selectedText.append(line.substring(start, end));
-            if (i < endY) {
+        int startLine = startRawCoords[0];
+        int startX = startRawCoords[1];
+        int endLine = endRawCoords[0];
+        int endX = endRawCoords[1];
+    
+        StringBuilder selectedText = new StringBuilder();
+    
+        for (int i = startLine; i <= endLine; i++) {
+            StringBuilder line = rawContent.get(i);
+            int from = (i == startLine) ? startX : 0;
+            int to = (i == endLine) ? endX : line.length();
+    
+            selectedText.append(line.substring(from, Math.min(to, line.length())));
+            if (i < endLine) {
                 selectedText.append("\n");
             }
         }
     
         return selectedText.toString();
+    }
+
+    public int[] convertToRawCoordinates(int[] coords) {
+        int wrappedLineCount = 0;
+        int line = coords[0];
+        int position = coords[1];
+    
+        // Пройдем по строкам в rawContent
+        for (int i = 0; i < getRawContent().size(); i++) {
+            StringBuilder rawLine = getRawContent().get(i);
+            
+            if (rawLine.length() == 0) {
+                wrappedLineCount++;
+                if (line < wrappedLineCount) {
+                    return new int[] {i, 0};  // Если пустая строка, возвращаем позицию 0
+                }
+                continue;
+            }
+    
+            // Для каждой строки rawContent вычисляем количество обернутых строк
+            int wrappedLinesForThisRawLine = (int) Math.ceil((double) rawLine.length() / getMaxLength());
+            
+            if (line < wrappedLineCount + wrappedLinesForThisRawLine) {
+                int segment = line - wrappedLineCount;
+                return new int[] {i, segment * getMaxLength() + position};
+            }
+            wrappedLineCount += wrappedLinesForThisRawLine;
+        }
+        
+        // Если ничего не найдено, возвращаем последние координаты
+        return new int[] {getRawContent().size() - 1, 
+                          getRawContent().get(getRawContent().size() - 1).length()};
     }
 
     /**

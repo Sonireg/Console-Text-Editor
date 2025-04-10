@@ -3,13 +3,10 @@ package editor;
 import java.io.IOException;
 import java.util.Scanner;
 
-import editor.BasicEditor.EditorViewer;
-import editor.Parsers.*;
 import editor.User.UserManager;
 import editor.User.Permissions.PermissionsManager;
 import editor.User.Roles.EditorRole;
 import editor.User.Roles.ViewerRole;
-import editor.Viewer.FileViewer;
 
 public class Menu {
 

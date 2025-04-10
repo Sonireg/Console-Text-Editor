@@ -8,11 +8,9 @@ import editor.TerminalSettings.TerminalSettings;
 
 public class View {
     private final EditorState state;
-    private final Terminal terminal;
 
     public View(EditorState state, Terminal terminal) {
         this.state = state;
-        this.terminal = terminal;
     }
 
     public void refreshScreen() {
@@ -77,7 +75,7 @@ public class View {
             endX = tmpX;
             endY = tmpY;
         }
-
+        builder.append(TerminalSettings.GetInstance().getTheme().apply());
         for (int i = 0; i < rows; i++) {
             int fileI = offsetY + i;
             if (fileI >= content.size()) {
@@ -100,7 +98,7 @@ public class View {
                     } else if (fileI == endY) {
                         selected = (j < endX);
                     }
-                    builder.append(TerminalSettings.GetInstance().getTheme().apply());
+                    
                     if (selected) builder.append("\033[7m");
                     builder.append(line.charAt(j));
                     if (selected) builder.append("\033[0m");

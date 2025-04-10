@@ -9,8 +9,8 @@ public class MDParser extends Parser {
     @Override
     public List<StringBuilder> parse(List<StringBuilder> rawContent, int maxLength) {
         List<StringBuilder> result = new ArrayList<>();
-        result = cutLines(result, maxLength);
-        for (StringBuilder rawLine : rawContent) {
+        List<StringBuilder> promResult = cutLines(rawContent, maxLength);
+        for (StringBuilder rawLine : promResult) {
             String line = rawLine.toString();
             // Тройные стили: жирный + подчёркнутый + курсив
             line = line.replaceAll("\\*\\*\\*__([^_]+?)__\\*\\*\\*", "\u001B[1m\u001B[3m\u001B[4m$1\u001B[0m");

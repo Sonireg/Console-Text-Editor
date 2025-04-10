@@ -27,24 +27,40 @@ public class ContentEditor {
         helper.anchorCursor();
     }
 
+
     public void deleteSelectionOrSymbol() {
         if (state.hasSelection()) {
+            // Получаем координаты выделения в контексте отображаемого контента
             int[] start = state.getSelectionStartCoordinates();
             int[] end = state.getSelectionEndCoordinates();
+            
+            // Преобразуем эти координаты в координаты для rawContent
+            int[] startRaw = state.convertToRawCoordinates(start);
+            int[] endRaw = state.convertToRawCoordinates(end);
+            
+            // Получаем удаляемый текст из rawContent
             String deletedText = state.getSelectedText();
-    
-            Comand delete = new DeleteComand(state, deletedText, start, end);
+        
+            // Создаём команду удаления с преобразованными координатами
+            Comand delete = new DeleteComand(state, deletedText, startRaw, endRaw);
             commandManager.execute(delete);
-    
+        
+            // Обновляем курсор после удаления
             state.setCursorX(start[1]);
             state.setCursorY(start[0]);
+            
+            // Очищаем выделение
             helper.clearSelection();
-            delete.setAfterCoordAndOffsetY(new  int[] {state.getCursorX(), state.getCursorY()}, 
-            state.getOffsetY());
+            
+            // Устанавливаем координаты курсора после выполнения команды
+            delete.setAfterCoordAndOffsetY(new int[] {state.getCursorX(), state.getCursorY()}, state.getOffsetY());
         } else {
             deleteSymbol();
         }
     }
+
+    
+
 
     private void deleteSymbol() {
         int[] pos = state.getRawCoordinates();
@@ -85,12 +101,13 @@ public class ContentEditor {
         }
         Comand insert = new InsertComand(state, String.valueOf(ch), state.getRawCoordinates());
         commandManager.execute(insert);
-        if (ch == '\n') {
+        if (ch == '\r') {
             helper.moveDown();
             state.setCursorX(0);
         } else {
             helper.moveRight();
-            if (state.getCursorX() == 0) helper.moveRight();
+            if (state.getCursorX() == 0) 
+                helper.moveRight();
         }
         insert.setAfterCoordAndOffsetY(new  int[] {state.getCursorX(), state.getCursorY()}, 
         state.getOffsetY());
@@ -120,9 +137,13 @@ public class ContentEditor {
         state.getOffsetY());
         helper.clearSelection();
     }
+
+
     public void copy() {
         ClipboardManager.copyToClipboard(state.getSelectedText());
     }
+
+
 
     public void cut() {
         ClipboardManager.copyToClipboard(state.getSelectedText());
