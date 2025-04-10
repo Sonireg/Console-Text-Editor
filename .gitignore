@@ -29,5 +29,6 @@ replay_pid*
 *.save
 *.txt
 
-test.md
-test.rtf
+TestFiles/*
+users.json
+permissions.json

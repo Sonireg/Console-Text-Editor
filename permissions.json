@@ -1,1 +1,8 @@
-{ }
+{
+  "TestFiles/test.txt": {
+    "admin": "denis",
+    "editors": [
+      "anna"
+    ]
+  }
+}

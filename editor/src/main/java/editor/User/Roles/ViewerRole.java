@@ -3,6 +3,7 @@ package editor.User.Roles;
 import java.io.IOException;
 
 import editor.Parsers.*;
+import editor.User.Permissions.PermissionsManager;
 import editor.Viewer.FileViewer;
 
 public class ViewerRole implements OpeningRole {
@@ -13,7 +14,14 @@ public class ViewerRole implements OpeningRole {
         switch (fileFormat) {
             case "md" -> FileViewer.viewCycle(fileName, new MDParser());
             case "rtf" -> FileViewer.viewCycle(fileName, new RTFParser());
+            case "json" -> FileViewer.viewCycle(fileName, new JSONParser());
+            case "xml" -> FileViewer.viewCycle(fileName, new XMLParser());
             default -> FileViewer.viewCycle(fileName, new TXTPArser());
         }
+    }
+
+    @Override
+    public boolean canAcces(String fileName, String username, PermissionsManager permissionsManager) {
+        return true;
     }
 }
