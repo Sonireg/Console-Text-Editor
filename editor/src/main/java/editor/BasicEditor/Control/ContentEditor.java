@@ -60,6 +60,8 @@ public class ContentEditor {
             start = new int[] {pos[0], pos[1] - 1};
             deletedContent = String.valueOf(state.getRawContent().get(pos[0]).charAt(pos[1] - 1));
             helper.moveLeft();
+            if (state.getCursorX() == state.getMaxLength())
+                helper.moveLeft();
         } else {
             // удаление переноса строки
             int prevLine = pos[0] - 1;
@@ -88,6 +90,7 @@ public class ContentEditor {
             state.setCursorX(0);
         } else {
             helper.moveRight();
+            if (state.getCursorX() == 0) helper.moveRight();
         }
         insert.setAfterCoordAndOffsetY(new  int[] {state.getCursorX(), state.getCursorY()}, 
         state.getOffsetY());

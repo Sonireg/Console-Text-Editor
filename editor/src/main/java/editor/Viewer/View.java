@@ -22,9 +22,7 @@ public class View {
         drawContent(builder);
         drawStatusBar(builder);
         drawCursor(builder);
-        terminal.disableRawMode();
         System.out.print(builder);
-        terminal.enableRawMode();
     }
 
     private void adjustScroll() {

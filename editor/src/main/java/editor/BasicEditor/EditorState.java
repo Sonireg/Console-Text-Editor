@@ -169,7 +169,7 @@ public class EditorState {
             }
             
             // Количество обернутых строк для текущей строки
-            int wrappedLinesForThisRawLine = (int) Math.ceil((double) rawLine.length() / (columns - 3));
+            int wrappedLinesForThisRawLine = (int) Math.ceil((double) rawLine.length() / (maxLength));
             
             if (cursorY < wrappedLineCount + wrappedLinesForThisRawLine) {
                 return i;
@@ -194,12 +194,12 @@ public class EditorState {
             }
     
             // Количество обернутых строк для текущей строки
-            int wrappedLinesForThisRawLine = (int) Math.ceil((double) rawLine.length() / (columns - 3));
+            int wrappedLinesForThisRawLine = (int) Math.ceil((double) rawLine.length() / (maxLength));
             
             if (cursorY < wrappedLineCount + wrappedLinesForThisRawLine) {
                 // Определяем позицию на текущей строке
                 int segment = cursorY - wrappedLineCount;
-                return (segment * (columns - 3)) + cursorX;
+                return (segment * (maxLength)) + cursorX;
             }
             wrappedLineCount += wrappedLinesForThisRawLine;
         }
