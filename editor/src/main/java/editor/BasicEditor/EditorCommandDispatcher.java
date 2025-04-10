@@ -4,6 +4,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import editor.BasicEditor.Control.ContentEditor;
+import editor.BasicEditor.Control.NavigationHandler;
+import editor.BasicEditor.Inputs.Keys;
 import editor.TerminalSettings.Terminal;
 
 public class EditorCommandDispatcher {

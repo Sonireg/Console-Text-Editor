@@ -1,6 +1,8 @@
-package editor.BasicEditor;
+package editor.BasicEditor.Control;
 
 import java.util.List;
+
+import editor.BasicEditor.EditorState;
 
 public class NavigationHandler {
     private final EditorState state;

@@ -1,6 +1,8 @@
-package editor.BasicEditor;
+package editor.BasicEditor.Control;
 
 
+import editor.BasicEditor.EditorState;
+import editor.BasicEditor.Inputs.ClipboardManager;
 import editor.Comand.*;
 
 public class ContentEditor {

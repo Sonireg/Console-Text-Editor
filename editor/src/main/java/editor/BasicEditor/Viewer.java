@@ -1,75 +1,53 @@
-package editor;
+package editor.BasicEditor;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.stream.Stream;
 
-import editor.BasicEditor.EditorCommandDispatcher;
-import editor.BasicEditor.EditorState;
+import editor.View;
+import editor.BasicEditor.Inputs.Keys;
+import editor.BasicEditor.Inputs.RawInputHandler;
 import editor.TerminalSettings.Terminal;
 import editor.TerminalSettings.TerminalSize;
 import editor.TerminalSettings.WindowsTerminal;
 import editor.TerminalSettings.TerminalSettings;
 
-import editor.BasicEditor.Keys;
-
 public class Viewer {
-    
-
-
-    public static void main(String[] args) throws IOException {
+    public static void viewCycle(String filePath) throws IOException {
         EditorState state = new EditorState();
         Terminal terminal = new WindowsTerminal();
         TerminalSettings settings = TerminalSettings.GetInstance();
-        InputHandler inputHandler = new InputHandler();
-
+        RawInputHandler inputHandler = new RawInputHandler();
         EditorCommandDispatcher dispatcher = new EditorCommandDispatcher(state, terminal);
 
         state.setMaxLength(terminal.getTerminalSize().width() - 5);
         terminal.enableRawMode();
+        openFile(state, filePath);
         initEditor(state, terminal);
 
         View view = new View(state, terminal);
-        handleNewFile(state, terminal, view);
 
-        while (true) {
+        Boolean fileIsOpened = true;
+        while (fileIsOpened) {
             view.refreshScreen();
-            
             int command = inputHandler.handleInput();
             switch (command) {
-                case Keys.EXIT -> exit();
-                case Keys.OPENFILE -> handleNewFile(state, terminal, view);
+                case Keys.EXIT -> {
+                    exit();
+                    fileIsOpened = false;
+                    terminal.disableRawMode();
+                }
                 case Keys.SAVEFILE -> saveFile(state);
                 case Keys.THEMECHANGE -> settings.toggleTheme();
                 default -> dispatcher.handleCommand(command);
             }
             // System.out.println(command);
         }
-    }
-
-    private static void handleNewFile(EditorState state, Terminal terminal, View view) throws IOException {
-        terminal.disableRawMode();
-        System.out.print("\033[2J\033[H");
-        System.out.println("Enter file path (or press Enter to cancel):");
-        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-        String filePath = reader.readLine();
-        terminal.enableRawMode();
-        if (filePath != null && !filePath.isEmpty()) {
-            Path path = Path.of(filePath);
-            if (!Files.exists(path)) {
-                Files.createFile(path);
-            }
-            openFile(state, filePath);
-        }
-        initEditor(state, terminal);
-        state.setFilePath(filePath);
     }
 
     private static void openFile(EditorState state, String inpath) {
@@ -108,6 +86,5 @@ public class Viewer {
 
     private static void exit() {
         System.out.print("\033[2J\033[H");
-        System.exit(0);
     }
 }

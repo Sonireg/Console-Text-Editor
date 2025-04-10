@@ -1,8 +1,8 @@
-package editor;
+package editor.BasicEditor.Inputs;
 
 import java.io.IOException;
 
-public class InputHandler {
+public class RawInputHandler {
     private static final int SHIFT = 49;
 
     public int handleInput() throws IOException {
