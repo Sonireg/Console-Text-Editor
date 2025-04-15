@@ -46,6 +46,7 @@ public class SaveManager {
         }
 
         writeToFile(content, options.targetFileName());
+        HistoryManager.addSnapshot(options.targetFileName(), content);
     }
 
     private SaveOptions.Format getFormatFromExtension(String filePath) {

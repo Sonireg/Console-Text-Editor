@@ -1,8 +1,11 @@
 package editor;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Files;
 import java.util.Scanner;
 
+import editor.BasicEditor.Saving.HistoryManager;
 import editor.User.UserManager;
 import editor.User.Permissions.PermissionsManager;
 import editor.User.Roles.EditorRole;
@@ -32,6 +35,8 @@ public class Menu {
                 case "open" -> handleOpen(args);
                 case "manage" -> handleManage(args);
                 case "ls" -> handleList(args);
+                case "delete" -> handleDelete(args);
+                case "history" -> handleHistory(args);
                 case "exit" -> {
                     handleExit();
                     working = false;
@@ -45,6 +50,18 @@ public class Menu {
     }
 
 
+    private static void handleDelete(String[] args) {
+        if (!userManager.isLoggedIn()) {
+            System.out.println("You must login first.");
+            return;
+        }
+        if (args.length != 2) {
+            System.out.println("Использование: delete file_name");
+            return;
+        }
+        String fileName = args[1];
+        userManager.getCurrentUser().deleteFile(fileName);
+    }
 
 
     private static void handleLogin(String[] args) {
@@ -88,7 +105,7 @@ public class Menu {
             case "-e" -> userManager.getCurrentUser().setOpeningRole(new EditorRole());
             case "-v" -> userManager.getCurrentUser().setOpeningRole(new ViewerRole());
         }
-        userManager.getCurrentUser().openFile(fileName);
+        System.out.println(userManager.getCurrentUser().openFile(fileName));
     }
 
 
@@ -100,6 +117,11 @@ public class Menu {
     }
 
     private static void handleManage(String[] args) {
+        if (!userManager.isLoggedIn()) {
+            System.out.println("You must login first.");
+            return;
+        }
+
         if (args.length < 4) {
             System.out.println("Usage: manage <filename> <username> <role>");
             return;
@@ -140,4 +162,51 @@ public class Menu {
             }
         }
     }
+
+
+    private static void handleHistory(String[] args) {
+        if (args.length < 2) {
+            System.out.println("Неверный синтаксис команды history.");
+            return;
+        }
+
+        String fileName = args[1];
+
+        if (args.length == 3 && args[2].equals("--count")) {
+            int count = HistoryManager.getSnapshotCount(fileName);
+            System.out.println("Всего версий: " + count);
+            return;
+        }
+
+        if (args.length == 3) {
+            try {
+                int version = Integer.parseInt(args[2]);
+                String content = HistoryManager.getSnapshot(fileName, version);
+                if (content == null) {
+                    System.out.println("Такой версии не существует.");
+                    return;
+                }
+
+                // Создаём временный файл
+                String ext = getFileExtension(fileName);
+                String tempName = fileName.replace("." + ext, "") + "TEMP." + ext;
+                Files.write(Path.of(tempName), content.getBytes());
+
+                // Смотрим его как Viewer
+                userManager.getCurrentUser().setOpeningRole(new ViewerRole());
+                userManager.getCurrentUser().openFile(tempName);
+
+            } catch (NumberFormatException | IOException e) {
+                System.out.println("Ошибка при открытии истории: " + e.getMessage());
+            }
+        } else {
+            System.out.println("Неверный синтаксис команды history.");
+        }
+    }
+
+    private static String getFileExtension(String fileName) {
+        int i = fileName.lastIndexOf('.');
+        return (i > 0) ? fileName.substring(i + 1) : "";
+    }
+
 }
