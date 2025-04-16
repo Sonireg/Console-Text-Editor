@@ -1,17 +1,12 @@
 package editor.BasicEditor.Saving;
 
 import editor.Converters.*;
-import editor.User.Subscriprions.NotificationManager;
-import editor.User.Subscriprions.NotificationStorage;
-import editor.User.Subscriprions.SubscriptionManager;
-import editor.BasicEditor.EditorState;
+import editor.User.Subscriprions.*;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
+import editor.BasicEditor.EditorState;
+import editor.BasicEditor.Saving.SaveStrategy.*;
 import java.io.IOException;
 import java.util.*;
-
-
 
 public class SaveManager {
     private static final Map<String, SaveOptions.Format> extensionToFormat = Map.of(
@@ -47,17 +42,29 @@ public class SaveManager {
                 return;
             }
         }
+        StorageStrategy strategy = new LocalStorageStrategy();
+        try 
+        {
+            strategy = options.getStorageType() == SaveOptions.StorageType.CLOUD
+            ? new CloudStorageStrategy()
+            : new LocalStorageStrategy();
+        }
+        catch (Exception e) 
+        { 
+            System.out.println("Unable to save to cloud, saving to local storage");
+        }
+         
 
-        writeToFile(content, options.targetFileName());
+        strategy.save(options.targetFileName(), content);
+
         HistoryManager.addSnapshot(options.targetFileName(), content);
 
         NotificationManager notificationManager = new NotificationManager(
             new SubscriptionManager(), new NotificationStorage()
         );
 
-        notificationManager.notifySubscribers(options.targetFileName(), 
+        notificationManager.notifySubscribers(options.targetFileName(),
                                               HistoryManager.getSnapshotCount(options.targetFileName()));
-
     }
 
     private SaveOptions.Format getFormatFromExtension(String filePath) {
@@ -67,14 +74,5 @@ public class SaveManager {
 
     private FormatConverter getConverter(SaveOptions.Format from, SaveOptions.Format to) {
         return converters.get(new FromToKey(from, to));
-    }
-
-    private void writeToFile(List<StringBuilder> content, String fileName) throws IOException {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
-            for (StringBuilder line : content) {
-                writer.write(line.toString());
-                writer.newLine();
-            }
-        }
     }
 }

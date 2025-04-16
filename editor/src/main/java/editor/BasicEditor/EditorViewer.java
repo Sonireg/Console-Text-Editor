@@ -86,16 +86,19 @@ public class EditorViewer {
     private static SaveOptions promptSaveOptions(Terminal terminal, String currentFilePath) throws IOException {
         System.out.print("\033[2J\033[H");
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-        terminal.disableRawMode(); // Чтобы можно было нормально вводить
-
+        terminal.disableRawMode();
+    
         System.out.println("Введите название нового файла: ");
         String newName = reader.readLine().trim();
-
+    
         System.out.println("Выберите формат сохранения (txt, md, rtf, json, xml): ");
         String formatStr = reader.readLine().trim().toUpperCase();
-
-        terminal.enableRawMode(); // Возвращаем raw mode
-
+    
+        System.out.println("Куда сохранить файл? Введите 'local' или 'cloud': ");
+        String storageStr = reader.readLine().trim().toUpperCase();
+    
+        terminal.enableRawMode();
+    
         SaveOptions.Format format;
         try {
             format = SaveOptions.Format.valueOf(formatStr);
@@ -103,7 +106,15 @@ public class EditorViewer {
             System.out.println("Неверный формат. Сохранение отменено.");
             return null;
         }
-
-        return new SaveOptions(currentFilePath, format, newName);
+    
+        SaveOptions.StorageType storageType;
+        try {
+            storageType = SaveOptions.StorageType.valueOf(storageStr);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Неверный тип хранилища. Сохранение отменено.");
+            return null;
+        }
+    
+        return new SaveOptions(currentFilePath, format, newName, storageType);
     }
 }

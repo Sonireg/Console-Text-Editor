@@ -267,7 +267,7 @@ public class Menu {
         String username = userManager.getCurrentUser().getUsername();
         NotificationStorage storage = new NotificationStorage();
         if (args.length > 1) {
-            if (args[1] == "-c") {
+            if (args[1].equals("-c")) {
                 try {
                     storage.clearNotifications(username);
                 } catch (IOException e) {
@@ -276,6 +276,7 @@ public class Menu {
                 return;
             }
             System.out.println("Использование без флагов выводит уведомления. Флаг -c для того, чтобы удалить все уведомления");
+            return;
         }
 
         try {
