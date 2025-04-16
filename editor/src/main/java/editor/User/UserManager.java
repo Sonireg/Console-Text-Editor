@@ -81,4 +81,8 @@ public class UserManager {
             adminFiles.forEach(System.out::println);
         }
     }
+
+    public PermissionsManager getPermissionsManager() {
+        return permissionsManager;
+    }
 }

@@ -46,6 +46,10 @@ public class PermissionsManager {
         }
     }
 
+    public Set<String> getUsers() {
+        return users;
+    }
+
     // ---------- PERMISSIONS LOGIC ----------
     public FilePermissions getOrCreatePermissions(String filename, String adminUsername) {
         if (!filePermissions.containsKey(filename)) {

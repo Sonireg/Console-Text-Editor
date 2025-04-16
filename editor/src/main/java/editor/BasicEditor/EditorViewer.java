@@ -89,7 +89,7 @@ public class EditorViewer {
         terminal.disableRawMode(); // Чтобы можно было нормально вводить
 
         System.out.println("Введите название нового файла: ");
-        String newName = reader.readLine().trim().toUpperCase();
+        String newName = reader.readLine().trim();
 
         System.out.println("Выберите формат сохранения (txt, md, rtf, json, xml): ");
         String formatStr = reader.readLine().trim().toUpperCase();

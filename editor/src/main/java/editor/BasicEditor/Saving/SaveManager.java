@@ -1,6 +1,9 @@
 package editor.BasicEditor.Saving;
 
 import editor.Converters.*;
+import editor.User.Subscriprions.NotificationManager;
+import editor.User.Subscriprions.NotificationStorage;
+import editor.User.Subscriprions.SubscriptionManager;
 import editor.BasicEditor.EditorState;
 
 import java.io.BufferedWriter;
@@ -47,6 +50,14 @@ public class SaveManager {
 
         writeToFile(content, options.targetFileName());
         HistoryManager.addSnapshot(options.targetFileName(), content);
+
+        NotificationManager notificationManager = new NotificationManager(
+            new SubscriptionManager(), new NotificationStorage()
+        );
+
+        notificationManager.notifySubscribers(options.targetFileName(), 
+                                              HistoryManager.getSnapshotCount(options.targetFileName()));
+
     }
 
     private SaveOptions.Format getFormatFromExtension(String filePath) {

@@ -31,7 +31,10 @@ replay_pid*
 
 TestFiles/*
 History/*
+notifications/*
+
 users.json
 permissions.json
+subscriptions.json
 
 TODO

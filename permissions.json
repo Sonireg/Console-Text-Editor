@@ -6,6 +6,10 @@
       "n"
     ]
   },
+  "TestFiles/tets.txt": {
+    "admin": "anna",
+    "editors": []
+  },
   "TestFiles/test.md": {
     "admin": "denis",
     "editors": []
