@@ -42,9 +42,9 @@ public class User {
             return "Not Admin!";
         }
         if (FileManager.deleteFile(fileName)) {
-            return "Файл \"" + fileName + "\" успешно удалён.";
+            return "File \"" + fileName + "\" deleted!";
         } else {
-            return "Удаление файла \"" + fileName + "\" не удалось.";
+            return "Unable to delete \"" + fileName + "\"!";
         }
     }
 }

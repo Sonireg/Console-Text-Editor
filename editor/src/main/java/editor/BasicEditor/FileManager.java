@@ -17,11 +17,11 @@ public class FileManager {
         if (file.exists()) {
             deleted = file.delete();
             if (!deleted) {
-                System.out.println("Не удалось удалить файл: " + fileName);
+                System.out.println("Unable to delete file: " + fileName);
                 return false;
             }
         } else {
-            System.out.println("Файл не найден: " + fileName);
+            System.out.println("File not found: " + fileName);
         }
 
         // Удаление из permissions.json
@@ -37,11 +37,11 @@ public class FileManager {
 
                 Gson gson = new GsonBuilder().setPrettyPrinting().create();
                 Files.writeString(permissionsPath, gson.toJson(root), StandardCharsets.UTF_8);
-                System.out.println("Запись о файле удалена из permissions.json.");
+                System.out.println("Note about file deleted from permissions.json.");
             }
 
         } catch (IOException e) {
-            System.out.println("Oшибка при обновлении permissions.json");
+            System.out.println("Error while updating permissions.json");
             e.printStackTrace();
         }
 

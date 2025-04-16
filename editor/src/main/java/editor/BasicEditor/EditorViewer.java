@@ -88,13 +88,13 @@ public class EditorViewer {
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         terminal.disableRawMode();
     
-        System.out.println("Введите название нового файла: ");
+        System.out.println("Enter name of new file: ");
         String newName = reader.readLine().trim();
     
-        System.out.println("Выберите формат сохранения (txt, md, rtf, json, xml): ");
+        System.out.println("Choose saving format (txt, md, rtf, json, xml): ");
         String formatStr = reader.readLine().trim().toUpperCase();
     
-        System.out.println("Куда сохранить файл? Введите 'local' или 'cloud': ");
+        System.out.println("Where to save file? Enter 'local' or 'cloud': ");
         String storageStr = reader.readLine().trim().toUpperCase();
     
         terminal.enableRawMode();
@@ -103,7 +103,7 @@ public class EditorViewer {
         try {
             format = SaveOptions.Format.valueOf(formatStr);
         } catch (IllegalArgumentException e) {
-            System.out.println("Неверный формат. Сохранение отменено.");
+            System.out.println("Wrong format! Saving denied.");
             return null;
         }
     
@@ -111,7 +111,7 @@ public class EditorViewer {
         try {
             storageType = SaveOptions.StorageType.valueOf(storageStr);
         } catch (IllegalArgumentException e) {
-            System.out.println("Неверный тип хранилища. Сохранение отменено.");
+            System.out.println("Wrong storage type! Saving denied.");
             return null;
         }
     

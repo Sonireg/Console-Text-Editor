@@ -24,7 +24,7 @@ public class NotificationManager {
             try {
                 storage.addNotification(user, message);
             } catch (IOException e) {
-                System.out.println("Ошибка при сохранении уведомления для " + user + ": " + e.getMessage());
+                System.out.println("Error saving notification for " + user + ": " + e.getMessage());
             }
         }
     }

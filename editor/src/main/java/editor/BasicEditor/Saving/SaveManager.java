@@ -38,7 +38,7 @@ public class SaveManager {
             if (converter != null) {
                 content = converter.convert(content);
             } else {
-                System.out.println("Нет конвертера из " + sourceFormat + " в " + targetFormat);
+                System.out.println("There is no converter from " + sourceFormat + " to " + targetFormat);
                 return;
             }
         }
